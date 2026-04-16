@@ -1,7 +1,6 @@
 ﻿using ReminderAIBot.Models.Database;
-using ReminderAIBot.Services.ReminderRepository;
-using ReminderAIBot.Services.UserRepository;
-
+using ReminderAIBot.Services.Repositories.ReminderRepository;
+using ReminderAIBot.Services.Repositories.UserRepository;
 
 namespace ReminderAIBot.Services.ReminderService
 {
@@ -37,7 +36,7 @@ namespace ReminderAIBot.Services.ReminderService
             User? user = await this._userRepository.GetByTelegramId(userId);
             if (user is null)
             {
-                user = new User { Id = new Random().Next(), TelegramId = userId, TimeZone = TimeZoneInfo.Local };
+                user = new User { Id = new Random().Next(), TelegramId = userId, TimeZoneId = TimeZoneInfo.Local.ToString() };
                 await this._userRepository.Add(user);
             }
 

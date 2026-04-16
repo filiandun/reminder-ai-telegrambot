@@ -4,6 +4,7 @@ using IAIChatServiceLib;
 using ReminderAIBot.Models;
 using IAIChatServiceLib.Models;
 using ReminderAIBot.Models.Database;
+using System.Linq.Expressions;
 
 
 namespace ReminderAIBot.Services.ReminderParser
@@ -46,8 +47,8 @@ namespace ReminderAIBot.Services.ReminderParser
         // TODO добавить базовый парсинг, чтобы не дёргать AI, кодгда сообщение приходят уровня "как дела?".
         public async Task<Reminder> ParseAsync(string rawText)
         {
-            //int balance = await this._AIChatService.GetBalanceTokenAsync();
-            //this._logger.LogInformation($"balance - {balance}");
+            int balance = await this._AIChatService.GetBalanceTokenAsync();
+            this._logger.LogInformation($"balance - {balance}");
 
             AIRequest AIRequest = this.MapToAIRequest("user", rawText);
 
@@ -70,10 +71,19 @@ namespace ReminderAIBot.Services.ReminderParser
             return AIRequest;
         }
 
-
+        // TODO очень важно проверять валидность JSON и требовать заново сгенерировать от ИИ:
+        // очень часто он любит добавить комментарий или какие-нибудь ещё символы добавить
+        // пример метода для очистки в самом низу (CleanJson)
         private Reminder MapToReminder(AIResponse AIResponse, string rawText)
         {
-            ReminderDraft reminderDraft = JsonSerializer.Deserialize<ReminderDraft>(AIResponse.Message.Content) ?? throw new Exception("json serializer error");
+            // TODO добавить try catch
+            ReminderDraft? reminderDraft = JsonSerializer.Deserialize<ReminderDraft>(AIResponse.Message.Content);
+
+            if (reminderDraft is null)
+            {
+                this._logger.LogCritical("Уёбище на GigaChat вставил свой комментарий в JSON БЛЯТЬ, 99.9%");
+                return new Reminder();
+            }
 
             Reminder reminder = new Reminder()
             {
@@ -84,6 +94,22 @@ namespace ReminderAIBot.Services.ReminderParser
             };
 
             return reminder;
+        }
+
+
+        private string CleanJson(string input)
+        {
+            input = input.Replace("```json", "").Replace("```", "");
+
+            int start = input.IndexOf('{');
+            if (start >= 0)
+                input = input[start..];
+
+            int end = input.LastIndexOf('}');
+            if (end >= 0)
+                input = input[..(end + 1)];
+
+            return input.Trim();
         }
     }
 }

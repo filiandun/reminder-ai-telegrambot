@@ -1,4 +1,6 @@
-﻿namespace ReminderAIBot.Models.Database
+﻿using System.Text.Json.Serialization;
+
+namespace ReminderAIBot.Models.Database
 {
     public record User
     {
@@ -6,6 +8,10 @@
 
         public long TelegramId { get; set; }
 
-        public TimeZoneInfo? TimeZone { get; set; }
+        public string? TimeZoneId { get; set; }
+
+
+        [JsonIgnore]
+        public TimeZoneInfo? TimeZone => this.TimeZoneId is null ? null : TimeZoneInfo.FindSystemTimeZoneById(TimeZoneId);
     }
 }

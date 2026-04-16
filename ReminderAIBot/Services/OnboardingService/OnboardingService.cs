@@ -1,6 +1,7 @@
 ﻿using ReminderAIBot.Models;
-using ReminderAIBot.Services.SenderService;
-
+using ReminderAIBot.Models.Messages;
+using ReminderAIBot.Services.Messenger.SenderService;
+using System.Text;
 
 namespace ReminderAIBot.Services.OnboardingService
 {
@@ -21,12 +22,26 @@ namespace ReminderAIBot.Services.OnboardingService
 
         public async Task Greeting(long chatId)
         {
-            await this._senderService.SendMessageAsync(chatId, new BotMessage { Text = "Привет!\nЯ бот для создания напоминаний. Внутри себя я использую ИИ для лучшего распознавания. Просто напиши мне \"послезавтра в 9 вечера запись к барберу\"" });
+            StringBuilder greetingSb = new StringBuilder();
+            greetingSb.AppendLine("Привет!");
+            greetingSb.AppendLine("Я бот для создания напоминаний.");
+            greetingSb.AppendLine("Внутри себя я использую ИИ для лучшего распознавания: росто напиши мне \"послезавтра в 7 вечера запись к барберу\"");
+            greetingSb.AppendLine();
+            greetingSb.AppendLine("Однако перед использованием выбери свой часовой пояс из списка ниже, это необходимо для корретных и своевременных напоминаниях.");
+
+            BotMessage message = new BotMessage
+            {
+                Text = greetingSb.ToString(),
+                Buttons = 
+            }
+
+            await this._senderService.SendMessageAsync(chatId, );
         }
 
         public async Task AskTimeZone(long chatId)
         {
-            //await this._senderService.SendMessageWithButtonsAsync(chatId);
+            List<TimeZoneInfo> timeZones = TimeZoneInfo.GetSystemTimeZones().ToList();
+
             throw new NotImplementedException();
         }
     }

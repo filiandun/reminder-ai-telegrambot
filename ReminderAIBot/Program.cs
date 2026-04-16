@@ -7,17 +7,19 @@ using GigaChatServiceLib;
 using GigaChatServiceLib.Models.Config;
 
 using ReminderAIBot.Models;
-using ReminderAIBot.Services.SenderService;
-using ReminderAIBot.Services.UserRepository;
-using ReminderAIBot.Services.MessageHandler;
-using ReminderAIBot.Services.MessageBuilder;
 using ReminderAIBot.Services.ReminderParser;
-using ReminderAIBot.Services.RecieverService;
 using ReminderAIBot.Services.ReminderService;
-using ReminderAIBot.Services.ReminderRepository;
-using ReminderAIBot.Services.CallbackDataParser;
-using ReminderAIBot.Services.CallbackDataBuilder;
 using ReminderAIBot.Services.OnboardingService;
+using ReminderAIBot.Services.Messenger.SenderService;
+using ReminderAIBot.Services.Messenger.RecieverService;
+using ReminderAIBot.Services.Repositories.ReminderRepository;
+using ReminderAIBot.Services.Repositories.UserRepository;
+using ReminderAIBot.Services.Messages.MessageHandler;
+using ReminderAIBot.Services.Messages.MessageBuilder;
+using ReminderAIBot.Services.Callbacks.CallbackDataParser;
+using ReminderAIBot.Services.Callbacks.CallbackDataBuilder;
+using ReminderAIBot.Services.Messages.MessageService;
+using ReminderAIBot.Services.Callbacks.CallbackService;
 
 
 namespace ReminderAIBot
@@ -60,6 +62,10 @@ namespace ReminderAIBot
             builder.Services.AddSingleton<ICallbackDataParser, CallbackDataParser>();
 
             builder.Services.AddSingleton<IOnboardingService, OnboardingService>();
+
+            builder.Services.AddSingleton<IMessageService, MessageService>();
+            builder.Services.AddSingleton<ICallbackService, CallbackService>();
+
 
             builder.Services.AddSingleton<GigaChatConfig>();
 
