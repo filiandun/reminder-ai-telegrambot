@@ -76,9 +76,10 @@ namespace ReminderAIBot.Services.Handlers.UpdateHandler
 
             long chatId = callbackQuery.Message.Chat.Id;
             int messageId = callbackQuery.Message.MessageId;
+            string callbackQueryId = callbackQuery.Id;
             string? callbackData = callbackQuery.Data;
 
-            await this._callbackService.HandleAsync(chatId, messageId, callbackData);
+            await this._callbackService.HandleAsync(chatId, messageId, callbackQueryId, callbackData);
         }
     }
 }

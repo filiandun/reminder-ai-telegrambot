@@ -1,6 +1,6 @@
 ﻿using ReminderAIBot.Models.Messages;
-using ReminderAIBot.Models.Callbacks;
 using ReminderAIBot.Models.UI.ScreenModel;
+using ReminderAIBot.Models.CallbackCommands;
 
 using ReminderAIBot.Services.Messenger.SenderService;
 using ReminderAIBot.Services.Messenger.ScreenRenderer;
@@ -34,7 +34,7 @@ namespace ReminderAIBot.Services.Handlers.CallbackHandler
         }
 
 
-        public async Task HandleAsync(long chatId, int messageId, string? data)
+        public async Task HandleAsync(long chatId, int messageId, string callbackQueryId, string? data)
         {
             if (data is null)
             {
@@ -42,75 +42,37 @@ namespace ReminderAIBot.Services.Handlers.CallbackHandler
                 return;
             }
 
-            CallbackData? callbackData = CallbackDataCodec.Decode(data);
+            CallbackCommand? callbackCommand = CallbackDataCodec.Decode(data);
 
-            if (callbackData is null)
+            if (callbackCommand is null)
             {
-                this._logger.LogWarning("handle: callbackData is null");
+                this._logger.LogWarning("handle: callback command is null");
                 return;
             }
 
-            switch (callbackData)
+            switch (callbackCommand)
             {
-                case NavigationCallbackData navigationCallbackData: await this.HandleNavigationAsync(navigationCallbackData, chatId, messageId); break;
-                case ReminderCallbackData reminderCallbackData: await this.HandleReminderAsync(reminderCallbackData, chatId, messageId); break;
-                case SettingsCallbackData settingsCallbackData: await this.HandleSettingsAsync(settingsCallbackData, chatId, messageId); break;
+                case OpenHomeCommand: await this.HandleOpenAsync(await this._homeApplicationService.BuildHomeScreenModelAsync(chatId), chatId, messageId); break;
 
-                default: this._logger.LogWarning($"handle: unknown type callback data: ({callbackData.GetType()})"); break;
+                case OpenRemindersListCommand command: await this.HandleOpenAsync(await this._reminderApplicationService.BuildRemindersListScreenModelAsync(chatId, command.Page), chatId, messageId); break;
+                case OpenReminderDetailsCommand command: await this.HandleOpenAsync(await this._reminderApplicationService.BuildReminderScreenModelAsync(chatId, command.ReminderId), chatId, messageId); break;
+
+                //case CreateReminderCommand createReminderCommand: await this.HandleCreateReminderAsync(createReminderCommand, chatId, messageId); break;
+                case EditReminderCommand editReminderCommand: await this._senderService.AnswerCallbackQuery(callbackQueryId, "TODO"); break;
+                case DeleteReminderCommand deleteReminderCommand: await this._senderService.AnswerCallbackQuery(callbackQueryId, "Напоминание удалено"); break;
+
+                //case OpenTimeZoneListCommand openTimeZoneListCommand: await this.HandleOpenAsync(await this._settingsApplicationService.Build(), chatId, messageId); break;
+                //case SetTimeZoneCommand setTimeZoneCommand: await this.HandleSetTimeZoneAsync(setTimeZoneCommand, chatId, messageId); break;
+
+                default: this._logger.LogWarning($"handle: unknown type callback data: ({callbackCommand.GetType()})"); break;
             }
         }
 
-
-        private async Task HandleNavigationAsync(NavigationCallbackData callbackData, long chatId, int messageId)
+        private async Task HandleOpenAsync(ScreenModel screenModel, long chatId, int messageId)
         {
-            int targetPage = callbackData.TargetPage ?? 0;
+            RenderedMessage renderedMessage = this._screenRenderer.Render(screenModel);
 
-            ScreenModel screenModel = callbackData.Screen switch
-            {
-                Screen.Home => await this._homeApplicationService.BuildHomeScreenModelAsync(chatId),
-
-                Screen.RemindersList => await this._reminderApplicationService.BuildRemindersListScreenModelAsync(chatId, page: targetPage, pageSize: 3),
-
-                _ => throw new Exception($"handle open screen: unknown screen {callbackData.Screen.ToString()}")
-            };
-
-            RenderedMessage? renderedMessage = this._screenRenderer.Render(screenModel);
-
-            if (renderedMessage is null)
-            {
-                this._logger.LogWarning("handle open screen: rendered message is null");
-                return;
-            }
-
-            await this._senderService.EditMessageAsync(chatId, messageId, renderedMessage); 
-        }
-
-        private async Task HandleReminderAsync(ReminderCallbackData callbackData, long chatId, int messageId)
-        {
-            switch (callbackData.Action)
-            {
-                case ReminderAction.Create: this._logger.LogTrace("ReminderAction.Create"); break;
-                case ReminderAction.Edit: this._logger.LogTrace("ReminderAction.Edit"); break;
-                case ReminderAction.Delete: this._logger.LogTrace("ReminderAction.Delete"); break;
-
-                default: throw new Exception($"handle reminder: unknown action {callbackData.Action.ToString()}");
-            };
-
-            //RenderedMessage? renderedMessage = this._screenRenderer.Render(screenModel);
-
-            //if (renderedMessage is null)
-            //{
-            //    this._logger.LogWarning("handle reminder: rendered message is null");
-            //    return;
-            //}
-
-            //await this._senderService.EditMessageAsync(chatId, messageId, renderedMessage);
-        }
-
-
-        private async Task HandleSettingsAsync(SettingsCallbackData callbackData, long chatId, int messageId)
-        {
-
+            await this._senderService.EditMessageAsync(chatId, messageId, renderedMessage);
         }
     }
 }
