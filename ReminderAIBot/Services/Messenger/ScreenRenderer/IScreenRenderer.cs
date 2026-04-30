@@ -6,6 +6,6 @@ namespace ReminderAIBot.Services.Messenger.ScreenRenderer
 {
     public interface IScreenRenderer
     {
-        public RenderedMessage? Render(ScreenModel model);
+        public RenderedMessage Render(ScreenModel model);
     }
 }

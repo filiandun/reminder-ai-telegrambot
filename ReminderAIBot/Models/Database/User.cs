@@ -1,12 +1,13 @@
 ﻿using System.Text.Json.Serialization;
 
+
 namespace ReminderAIBot.Models.Database
 {
     public record User
     {
         public int Id { get; set; }
 
-        public long TelegramId { get; set; }
+        public long PlatformUserId { get; set; }
 
         public string? TimeZoneId { get; set; }
 

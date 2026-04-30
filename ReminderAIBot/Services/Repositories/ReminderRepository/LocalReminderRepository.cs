@@ -21,7 +21,9 @@ namespace ReminderAIBot.Services.Repositories.ReminderRepository
         }
 
 
-        public async Task<List<Reminder>> GetByUserId(long userId) => this._db.Where(r => r.UserId == userId).ToList();
+        public async Task<Reminder?> GetReminder(int reminderId) => this._db.FirstOrDefault(r => r.Id == reminderId);
+
+        public async Task<List<Reminder>> GetRemindersList(long userId) => this._db.Where(r => r.UserId == userId).ToList();
 
         public async Task Add(Reminder reminder)
         {
