@@ -9,5 +9,8 @@ namespace ReminderAIBot.Services.Messenger.SenderService
         public Task EditMessageAsync(long chatId, int messageId, RenderedMessage message);
 
         public Task DeleteMessageAsync(long chatId, int messageId);
+
+        public Task AnswerCallbackQuery(string callbackQueryId, string text);
+
     }
 }

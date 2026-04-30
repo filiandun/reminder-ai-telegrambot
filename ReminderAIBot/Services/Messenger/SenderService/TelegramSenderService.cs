@@ -1,8 +1,8 @@
-﻿using Telegram.Bot;
+﻿using IAIChatServiceLib.Models;
+using ReminderAIBot.Models.Messages;
+using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
-
-using ReminderAIBot.Models.Messages;
 
 
 namespace ReminderAIBot.Services.Messenger.SenderService
@@ -56,6 +56,11 @@ namespace ReminderAIBot.Services.Messenger.SenderService
             this._logger.LogInformation($"delete: chatId [{chatId}] messageId [{messageId}]");
         }
 
+
+        public async Task AnswerCallbackQuery(string callbackQueryId, string text)
+        {
+            await this._telegramBotClient.AnswerCallbackQuery(callbackQueryId, text);
+        }
 
         // TODO подумать над тем, как cделать многоуровневые кнопки (это больше вопрос к моделям)
         private InlineKeyboardMarkup CreateInlineKeyboard(List<InlineButtonRow> inlineButtonRows)
